@@ -82,11 +82,6 @@ def predict():
         data_s = str(data_b, 'utf-8')
         data_s = data_s.replace("\r", "")
         data_s = data_s.replace("\n", "")
-        print(data_s[163])
-        print(data_s[164])
-        print(data_s[165])
-        print(data_s[166])
-        print(data_s)
         data = json.loads(data_s)
         gyro = data['gyro']
         accel = data['accel']
