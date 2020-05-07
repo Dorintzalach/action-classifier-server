@@ -1,7 +1,10 @@
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 from keras.models import model_from_json
 import pandas as pd
+import json
 import numpy as np
+import ast
+import flask_json
 
 
 global loaded_model_accel_x
@@ -18,7 +21,7 @@ lables = ['game', 'pocket', 'rest', 'stairs', 'shaking', 'texting', 'walking']
 lables_accel = ['game', 'rest', 'pocket', 'stairs', 'shaking', 'texting', 'walking']
 
 ########### add model path
-path = 'C:/Users/dorin/PycharmProjects/action-classfier/Models 28.4 with var and max'
+path = 'Models 28.4 with var and max'
 app = Flask(__name__)
 
 
@@ -75,7 +78,10 @@ def predict():
         global loaded_model_magn_x
         global loaded_model_magn_y
         global loaded_model_magn_z
-        data = request.get_json()
+        data_b = request.get_data()
+        data_s = str(data_b, 'utf-8')
+        data_s = data_s.replace("    ", "")
+        data = json.loads(data_s)
         gyro = data['gyro']
         accel = data['accel']
         magn = data['magn']
@@ -168,23 +174,16 @@ def predict():
         resp = Response(lables[keymax], status=200, mimetype='application/json')
     except Exception as e:
         resp = Response(e, status=500, mimetype='application/json')
+        resp.data = json.dumps({
+            "code": e.code,
+            "name": e.name,
+            "description": e.description,
+        })
     return resp
 
 
 def get_data_as_df(array_to_load):
-    after_split = array_to_load.split('}')
-    df = pd.DataFrame()
-    for i in after_split:
-        i = i.replace('[', '')
-        if (i[0] == ','):
-            i = i[1: len(i)]
-        i = i.replace(']', '')
-        if ('' == i):
-            print(i)
-        else:
-            i = i + '}'
-            j_rec = eval(i)
-            df = df.append(j_rec, ignore_index=True)
+    df = pd.DataFrame(array_to_load)
     return df
 
 
